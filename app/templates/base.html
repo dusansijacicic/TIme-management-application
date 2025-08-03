@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Time Management System{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            /* Emerald Theme (Default) */
+            --emerald-primary: #065f46;
+            --emerald-dark: #064e3b;
+            --emerald-light: #047857;
+            --emerald-lighter: #059669;
+            --emerald-darkest: #022c22;
+            
+            /* Purple Theme */
+            --purple-primary: #7c3aed;
+            --purple-dark: #6d28d9;
+            --purple-light: #8b5cf6;
+            --purple-lighter: #a78bfa;
+            --purple-darkest: #4c1d95;
+            
+            /* Chocolate Theme */
+            --chocolate-primary: #92400e;
+            --chocolate-dark: #78350f;
+            --chocolate-light: #b45309;
+            --chocolate-lighter: #d97706;
+            --chocolate-darkest: #451a03;
+            
+            /* Blue Theme */
+            --blue-primary: #1e40af;
+            --blue-dark: #1e3a8a;
+            --blue-light: #3b82f6;
+            --blue-lighter: #60a5fa;
+            --blue-darkest: #1e3a8a;
+            
+            /* Red Theme */
+            --red-primary: #b91c1c;
+            --red-dark: #991b1b;
+            --red-light: #dc2626;
+            --red-lighter: #ef4444;
+            --red-darkest: #7f1d1d;
+            
+            /* Orange Theme */
+            --orange-primary: #c2410c;
+            --orange-dark: #9a3412;
+            --orange-light: #ea580c;
+            --orange-lighter: #fb923c;
+            --orange-darkest: #7c2d12;
+            
+            /* Teal Theme */
+            --teal-primary: #0f766e;
+            --teal-dark: #134e4a;
+            --teal-light: #0d9488;
+            --teal-lighter: #14b8a6;
+            --teal-darkest: #042f2e;
+            
+            /* Pink Theme */
+            --pink-primary: #be185d;
+            --pink-dark: #9d174d;
+            --pink-light: #ec4899;
+            --pink-lighter: #f472b6;
+            --pink-darkest: #831843;
+            
+            /* White Secondary */
+            --white-secondary: #ffffff;
+            
+            /* Custom Theme Variables */
+            --custom-primary: #10b981;
+            --custom-primary-dark: #047857;
+            --custom-primary-light: #34d399;
+            --custom-primary-lighter: #6ee7b7;
+            --custom-primary-darkest: #022c22;
+            --custom-secondary: #ffffff;
+            
+            /* Text Color Variables */
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-light: #9ca3af;
+            --text-white: #ffffff;
+            --text-dark: #111827;
+            
+            /* Default colors */
+            --primary-color: var(--emerald-primary);
+            --primary-dark: var(--emerald-dark);
+            --primary-light: var(--emerald-light);
+            --primary-lighter: var(--emerald-lighter);
+            --primary-darkest: var(--emerald-darkest);
+            --secondary-color: var(--white-secondary);
+            --text-color: var(--text-primary);
+        }
+        
+        /* Theme Classes */
+        .theme-emerald {
+            --primary-color: var(--emerald-primary);
+            --primary-dark: var(--emerald-dark);
+            --primary-light: var(--emerald-light);
+            --primary-lighter: var(--emerald-lighter);
+            --primary-darkest: var(--emerald-darkest);
+        }
+        
+        .theme-purple {
+            --primary-color: var(--purple-primary);
+            --primary-dark: var(--purple-dark);
+            --primary-light: var(--purple-light);
+            --primary-lighter: var(--purple-lighter);
+            --primary-darkest: var(--purple-darkest);
+        }
+        
+        .theme-chocolate {
+            --primary-color: var(--chocolate-primary);
+            --primary-dark: var(--chocolate-dark);
+            --primary-light: var(--chocolate-light);
+            --primary-lighter: var(--chocolate-lighter);
+            --primary-darkest: var(--chocolate-darkest);
+        }
+        
+        .theme-blue {
+            --primary-color: var(--blue-primary);
+            --primary-dark: var(--blue-dark);
+            --primary-light: var(--blue-light);
+            --primary-lighter: var(--blue-lighter);
+            --primary-darkest: var(--blue-darkest);
+        }
+        
+        .theme-red {
+            --primary-color: var(--red-primary);
+            --primary-dark: var(--red-dark);
+            --primary-light: var(--red-light);
+            --primary-lighter: var(--red-lighter);
+            --primary-darkest: var(--red-darkest);
+        }
+        
+        .theme-orange {
+            --primary-color: var(--orange-primary);
+            --primary-dark: var(--orange-dark);
+            --primary-light: var(--orange-light);
+            --primary-lighter: var(--orange-lighter);
+            --primary-darkest: var(--orange-darkest);
+        }
+        
+        .theme-teal {
+            --primary-color: var(--teal-primary);
+            --primary-dark: var(--teal-dark);
+            --primary-light: var(--teal-light);
+            --primary-lighter: var(--teal-lighter);
+            --primary-darkest: var(--teal-darkest);
+        }
+        
+        .theme-pink {
+            --primary-color: var(--pink-primary);
+            --primary-dark: var(--pink-dark);
+            --primary-light: var(--pink-light);
+            --primary-lighter: var(--pink-lighter);
+            --primary-darkest: var(--pink-darkest);
+        }
+        
+        .theme-custom {
+            --primary-color: var(--custom-primary);
+            --primary-dark: var(--custom-primary-dark);
+            --primary-light: var(--custom-primary-light);
+            --primary-lighter: var(--custom-primary-lighter);
+            --primary-darkest: var(--custom-primary-darkest);
+        }
+        
+        /* Secondary Color Classes */
+        .secondary-white {
+            --secondary-color: var(--white-secondary);
+        }
+        
+        .secondary-emerald {
+            --secondary-color: var(--emerald-lighter);
+        }
+        
+        .secondary-purple {
+            --secondary-color: var(--purple-lighter);
+        }
+        
+        .secondary-chocolate {
+            --secondary-color: var(--chocolate-lighter);
+        }
+        
+        .secondary-blue {
+            --secondary-color: var(--blue-lighter);
+        }
+        
+        .secondary-red {
+            --secondary-color: var(--red-lighter);
+        }
+        
+        .secondary-orange {
+            --secondary-color: var(--orange-lighter);
+        }
+        
+        .secondary-teal {
+            --secondary-color: var(--teal-lighter);
+        }
+        
+        .secondary-pink {
+            --secondary-color: var(--pink-lighter);
+        }
+        
+        .secondary-custom {
+            --secondary-color: var(--custom-secondary);
+        }
+        
+        /* Text Color Classes */
+        .text-color-primary {
+            --text-color: var(--text-primary);
+        }
+        
+        .text-color-secondary {
+            --text-color: var(--text-secondary);
+        }
+        
+        .text-color-light {
+            --text-color: var(--text-light);
+        }
+        
+        .text-color-white {
+            --text-color: var(--text-white);
+        }
+        
+        .text-color-dark {
+            --text-color: var(--text-dark);
+        }
+        
+        .text-color-custom {
+            --text-color: var(--custom-text-color);
+        }
+        
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            border-radius: 8px;
+            margin: 2px 0;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+        .main-content {
+            background-color: var(--secondary-color);
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+            background-color: var(--secondary-color);
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 8px;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-darkest) 100%);
+            transform: translateY(-1px);
+        }
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+        .badge.bg-primary {
+            background-color: var(--primary-color) !important;
+        }
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+        .border-primary {
+            border-color: var(--primary-color) !important;
+        }
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+        }
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+        }
+        .page-link {
+            color: var(--primary-color);
+        }
+        .page-link:hover {
+            color: var(--primary-dark);
+        }
+        .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        /* Text color applications */
+        body {
+            color: var(--text-color);
+        }
+        
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+        
+        .text-light {
+            color: var(--text-light) !important;
+        }
+        
+        .text-dark {
+            color: var(--text-dark) !important;
+        }
+        
+        .card-body {
+            color: var(--text-color);
+        }
+        
+        .form-label {
+            color: var(--text-color);
+        }
+        
+        .form-text {
+            color: var(--text-secondary);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            {% if current_user.is_authenticated %}
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">Time Management</h4>
+                        <small class="text-white-50">{{ current_user.get_full_name() }}</small>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
+                                <i class="bi bi-speedometer2 me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'main.time_entry' %}active{% endif %}" href="{{ url_for('main.time_entry') }}">
+                                <i class="bi bi-clock me-2"></i>
+                                Unesi vreme
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'main.my_time_entries' %}active{% endif %}" href="{{ url_for('main.my_time_entries') }}">
+                                <i class="bi bi-list-check me-2"></i>
+                                Moji unosi
+                            </a>
+                        </li>
+                        
+                        <!-- Project Section -->
+                        {% if current_user.is_project_admin() and (current_user.is_super_admin() or current_user.is_company_admin()) %}
+                        <li class="nav-item mt-3">
+                            <h6 class="text-white-50 px-3 mb-2">Upravljanje projektima</h6>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.projects') }}">
+                                <i class="bi bi-project-diagram me-2"></i>
+                                Moji projekti
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- Reports Section -->
+                        <li class="nav-item mt-3">
+                            <h6 class="text-white-50 px-3 mb-2">Izveštaji</h6>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'reports.' in request.endpoint %}active{% endif %}" href="{{ url_for('reports.index') }}">
+                                <i class="bi bi-graph-up me-2"></i>
+                                Izveštaji
+                            </a>
+                        </li>
+                        
+                        <!-- Admin Section -->
+                        {% if current_user.is_super_admin() or current_user.is_company_admin() %}
+                        <li class="nav-item mt-3">
+                            <h6 class="text-white-50 px-3 mb-2">Administracija</h6>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'admin.' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.index') }}">
+                                <i class="bi bi-gear me-2"></i>
+                                Admin Panel
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'admin.users' %}active{% endif %}" href="{{ url_for('admin.users') }}">
+                                <i class="bi bi-people me-2"></i>
+                                Korisnici
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'admin.projects' %}active{% endif %}" href="{{ url_for('admin.projects') }}">
+                                <i class="bi bi-project-diagram me-2"></i>
+                                Projekti
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'admin.companies' %}active{% endif %}" href="{{ url_for('admin.companies') }}">
+                                <i class="bi bi-building me-2"></i>
+                                Kompanije
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    
+                    <hr class="text-white-50">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'settings.preferences' %}active{% endif %}" href="{{ url_for('settings.preferences') }}">
+                                <i class="bi bi-palette me-2"></i>
+                                Podešavanja
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                                <i class="bi bi-box-arrow-right me-2"></i>
+                                Odjavi se
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            {% endif %}
+            
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Top navbar -->
+                {% if current_user.is_authenticated %}
+                <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm rounded-bottom mb-4">
+                    <div class="container-fluid">
+                        <button class="navbar-toggler d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target=".sidebar">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <span class="navbar-brand">Time Management System</span>
+                        <div class="navbar-nav ms-auto">
+                            <span class="navbar-text">
+                                <i class="bi bi-person-circle me-1"></i>
+                                {{ current_user.get_full_name() }}
+                            </span>
+                        </div>
+                    </div>
+                </nav>
+                {% endif %}
+                
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Page content -->
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+        
+        // Load user color preferences on page load
+        {% if current_user.is_authenticated %}
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load user's color preferences
+            fetch('{{ url_for("settings.get_colors") }}')
+            .then(response => response.json())
+            .then(data => {
+                const root = document.documentElement;
+                
+                // Remove existing theme classes
+                root.classList.remove('theme-emerald', 'theme-purple', 'theme-chocolate', 'theme-blue', 'theme-red', 'theme-orange', 'theme-teal', 'theme-pink', 'theme-custom');
+                root.classList.remove('secondary-white', 'secondary-emerald', 'secondary-purple', 'secondary-chocolate', 'secondary-blue', 'secondary-red', 'secondary-orange', 'secondary-teal', 'secondary-pink', 'secondary-custom');
+                root.classList.remove('text-color-primary', 'text-color-secondary', 'text-color-light', 'text-color-white', 'text-color-dark', 'text-color-custom');
+                
+                // Add theme classes
+                root.classList.add(`theme-${data.primary_color}`);
+                root.classList.add(`secondary-${data.secondary_color}`);
+                root.classList.add(`text-color-${data.text_color || 'primary'}`);
+                
+                // Set custom colors if needed
+                if (data.primary_color === 'custom') {
+                    const primaryColor = data.custom_primary_color;
+                    const darkerColor = adjustColor(primaryColor, -20);
+                    const lighterColor = adjustColor(primaryColor, 20);
+                    const lightestColor = adjustColor(primaryColor, 40);
+                    const darkestColor = adjustColor(primaryColor, -40);
+                    
+                    root.style.setProperty('--custom-primary', primaryColor);
+                    root.style.setProperty('--custom-primary-dark', darkerColor);
+                    root.style.setProperty('--custom-primary-light', lighterColor);
+                    root.style.setProperty('--custom-primary-lighter', lightestColor);
+                    root.style.setProperty('--custom-primary-darkest', darkestColor);
+                }
+                
+                if (data.secondary_color === 'custom') {
+                    root.style.setProperty('--custom-secondary', data.custom_secondary_color);
+                }
+                
+                // Set custom text color if needed
+                if (data.text_color === 'custom') {
+                    root.style.setProperty('--custom-text-color', data.custom_text_color);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading color preferences:', error);
+            });
+        });
+        
+        // Helper function to adjust color brightness
+        function adjustColor(color, amount) {
+            const hex = color.replace('#', '');
+            const r = Math.max(0, Math.min(255, parseInt(hex.substr(0, 2), 16) + amount));
+            const g = Math.max(0, Math.min(255, parseInt(hex.substr(2, 2), 16) + amount));
+            const b = Math.max(0, Math.min(255, parseInt(hex.substr(4, 2), 16) + amount));
+            return '#' + r.toString(16).padStart(2, '0') + g.toString(16).padStart(2, '0') + b.toString(16).padStart(2, '0');
+        }
+        {% endif %}
+    </script>
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Projekti{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Projekti</h1>
+                <a href="{{ url_for('admin.new_project') }}" class="btn btn-primary">
+                    <i class="bi bi-plus"></i> Novi projekat
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Lista projekata</h5>
+                </div>
+                <div class="card-body">
+                    {% if projects %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Naziv</th>
+                                    <th>Kompanija</th>
+                                    <th>Status</th>
+                                    <th>Period</th>
+                                    <th>Korisnici</th>
+                                    <th>Akcije</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in projects %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ project.name }}</strong>
+                                        {% if project.description %}
+                                            <br><small class="text-muted">{{ project.description[:50] }}{% if project.description|length > 50 %}...{% endif %}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ project.company.name }}</span>
+                                    </td>
+                                    <td>
+                                        {% if project.status == 'active' %}
+                                            <span class="badge bg-success">Aktivan</span>
+                                        {% elif project.status == 'completed' %}
+                                            <span class="badge bg-secondary">Završen</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Na čekanju</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ project.start_date.strftime('%d.%m.%Y') }} - 
+                                        {% if project.end_date %}
+                                            {{ project.end_date.strftime('%d.%m.%Y') }}
+                                        {% else %}
+                                            <em>Nije definisan</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ project.users|length }} korisnika</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('admin.project_users', project_id=project.id) }}" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               title="Upravljaj korisnicima">
+                                                <i class="bi bi-people"></i>
+                                            </a>
+                                            <a href="{{ url_for('admin.edit_project', project_id=project.id) }}" 
+                                               class="btn btn-sm btn-outline-secondary" 
+                                               title="Izmeni projekat">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{{ url_for('main.project_time_entries', project_id=project.id) }}" 
+                                               class="btn btn-sm btn-outline-info" 
+                                               title="Pogledaj vremenske unose">
+                                                <i class="bi bi-clock"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-diagram-3 fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Nema projekata</h5>
+                        <p class="text-muted">Još uvek nema kreiranih projekata.</p>
+                        <a href="{{ url_for('admin.new_project') }}" class="btn btn-primary">
+                            <i class="bi bi-plus"></i> Kreiraj prvi projekat
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

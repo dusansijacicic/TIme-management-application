@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}Unesi vreme - Time Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock me-2"></i>
+                        Unesi vreme rada
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="timeEntryForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="project_id" class="form-label">Projekat *</label>
+                                <select class="form-select" id="project_id" name="project_id" required>
+                                    <option value="">Izaberi projekat</option>
+                                    {% for project in projects %}
+                                    <option value="{{ project.id }}">{{ project.name }} ({{ project.company_name }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="date" class="form-label">Datum *</label>
+                                <input type="text" class="form-control" id="date" name="date" placeholder="DD.MM.YYYY" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="hours" class="form-label">Broj sati *</label>
+                                <input type="number" class="form-control" id="hours" name="hours" 
+                                       step="0.5" min="0.5" max="24" required>
+                                <div class="form-text">Unesite broj sati (0.5 - 24)</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="description" class="form-label">Opis rada</label>
+                                <textarea class="form-control" id="description" name="description" 
+                                          rows="3" placeholder="Opisite šta ste radili..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                                <i class="bi bi-arrow-clockwise me-2"></i>
+                                Resetuj
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Sačuvaj unos
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Today's Summary -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-calendar-day me-2"></i>
+                        Današnji pregled
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div id="todaySummary">
+                        <div class="text-center py-3">
+                            <i class="bi bi-clock text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2">Nema unosa za danas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Entry -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-lightning me-2"></i>
+                        Brzi unos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Preddefinisane aktivnosti</label>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="quickEntry('Razvoj funkcionalnosti', 8)">
+                                <i class="bi bi-code-slash me-1"></i>
+                                Razvoj (8h)
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="quickEntry('Testiranje', 4)">
+                                <i class="bi bi-bug me-1"></i>
+                                Testiranje (4h)
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="quickEntry('Sastanak', 2)">
+                                <i class="bi bi-people me-1"></i>
+                                Sastanak (2h)
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="quickEntry('Dokumentacija', 3)">
+                                <i class="bi bi-file-text me-1"></i>
+                                Dokumentacija (3h)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Entries -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Nedavni unosi
+                    </h5>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="loadRecentEntries()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>
+                        Osveži
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="recentEntries">
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2">Učitavanje...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle text-success me-2"></i>
+                    Uspešno!
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage">Vreme je uspešno uneto!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Set today's date as default
+const today = new Date();
+const day = today.getDate().toString().padStart(2, '0');
+const month = (today.getMonth() + 1).toString().padStart(2, '0');
+const year = today.getFullYear();
+document.getElementById('date').value = `${day}.${month}.${year}`;
+
+// Form submission
+document.getElementById('timeEntryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Convert DD.MM.YYYY to YYYY-MM-DD for backend
+    const dateInput = document.getElementById('date').value.trim();
+    let dateFormatted = dateInput;
+    if (dateInput.includes('.')) {
+        const parts = dateInput.split('.');
+        if (parts.length === 3) {
+            const day = parts[0].trim().padStart(2, '0');
+            const month = parts[1].trim().padStart(2, '0');
+            const year = parts[2].trim();
+            dateFormatted = `${year}-${month}-${day}`;
+        }
+    }
+    
+    const formData = {
+        project_id: document.getElementById('project_id').value,
+        date: dateFormatted,
+        hours: parseFloat(document.getElementById('hours').value),
+        description: document.getElementById('description').value
+    };
+    
+    // Validation
+    if (!formData.project_id || !formData.date || !formData.hours) {
+        showAlert('Molimo popunite sva obavezna polja', 'danger');
+        return;
+    }
+    
+    if (formData.hours < 0.5 || formData.hours > 24) {
+        showAlert('Broj sati mora biti između 0.5 i 24', 'danger');
+        return;
+    }
+    
+    // Submit via AJAX
+    fetch('{{ url_for("main.time_entry") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessModal(data.message);
+            resetForm();
+            loadTodaySummary();
+            loadRecentEntries();
+        } else {
+            showAlert(data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Greška pri čuvanju unosa', 'danger');
+    });
+});
+
+// Quick entry function
+function quickEntry(description, hours) {
+    document.getElementById('description').value = description;
+    document.getElementById('hours').value = hours;
+}
+
+// Reset form
+function resetForm() {
+    document.getElementById('timeEntryForm').reset();
+    const today = new Date();
+    const day = today.getDate().toString().padStart(2, '0');
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const year = today.getFullYear();
+    document.getElementById('date').value = `${day}.${month}.${year}`;
+}
+
+// Load today's summary
+function loadTodaySummary() {
+    const today = new Date();
+    const day = today.getDate().toString().padStart(2, '0');
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const year = today.getFullYear();
+    const todayFormatted = `${day}.${month}.${year}`;
+    
+    // Convert DD.MM.YYYY to YYYY-MM-DD for API
+    const apiDate = `${year}-${month}-${day}`;
+    
+    fetch(`{{ url_for('main.api_time_entries') }}?start_date=${apiDate}&end_date=${apiDate}`)
+    .then(response => response.json())
+    .then(data => {
+        const summaryDiv = document.getElementById('todaySummary');
+        
+        if (data.length === 0) {
+            summaryDiv.innerHTML = `
+                <div class="text-center py-3">
+                    <i class="bi bi-clock text-muted" style="font-size: 2rem;"></i>
+                    <p class="text-muted mt-2">Nema unosa za danas</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const totalHours = data.reduce((sum, entry) => sum + entry.hours, 0);
+        const projects = [...new Set(data.map(entry => entry.project_name))];
+        
+        summaryDiv.innerHTML = `
+            <div class="text-center mb-3">
+                <h3 class="text-primary mb-0">${totalHours.toFixed(1)}h</h3>
+                <small class="text-muted">Ukupno danas</small>
+            </div>
+            <div class="mb-3">
+                <strong>Projekti:</strong>
+                <div class="mt-1">
+                    ${projects.map(project => `<span class="badge bg-primary me-1">${project}</span>`).join('')}
+                </div>
+            </div>
+            <div class="small">
+                <strong>Detalji:</strong>
+                ${data.map(entry => `
+                    <div class="d-flex justify-content-between mt-1">
+                        <span>${entry.project_name}</span>
+                        <span>${entry.hours}h</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    })
+    .catch(error => {
+        console.error('Error loading today summary:', error);
+    });
+}
+
+// Load recent entries
+function loadRecentEntries() {
+    fetch('{{ url_for("main.api_time_entries") }}')
+    .then(response => response.json())
+    .then(data => {
+        const entriesDiv = document.getElementById('recentEntries');
+        
+        if (data.length === 0) {
+            entriesDiv.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i>
+                    <p class="text-muted mt-2">Nema nedavnih unosa</p>
+                </div>
+            `;
+            return;
+        }
+        
+        entriesDiv.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Projekat</th>
+                            <th>Sati</th>
+                            <th>Opis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.slice(0, 10).map(entry => `
+                            <tr>
+                                <td>${formatDate(entry.date)}</td>
+                                <td><span class="badge bg-primary">${entry.project_name}</span></td>
+                                <td><strong>${entry.hours}h</strong></td>
+                                <td><small class="text-muted">${entry.description || '-'}</small></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    })
+    .catch(error => {
+        console.error('Error loading recent entries:', error);
+    });
+}
+
+// Show success modal
+function showSuccessModal(message) {
+    document.getElementById('successMessage').textContent = message;
+    new bootstrap.Modal(document.getElementById('successModal')).show();
+}
+
+// Show alert
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.querySelector('.main-content').insertBefore(alertDiv, document.querySelector('.main-content').firstChild);
+    
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
+// Format date
+function formatDate(dateString) {
+    // Handle both DD.MM.YYYY and YYYY-MM-DD formats
+    if (dateString.includes('.')) {
+        return dateString; // Already in DD.MM.YYYY format
+    } else {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('sr-RS');
+    }
+}
+
+// Load data on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadTodaySummary();
+    loadRecentEntries();
+});
+</script>
+{% endblock %} 

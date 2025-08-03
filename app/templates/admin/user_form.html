@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Uredi korisnika' if user else 'Novi korisnik' }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">{{ 'Uredi korisnika' if user else 'Novi korisnik' }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="userForm">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.username.label(class="form-label") }}
+                                    {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
+                                    {% if form.username.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.username.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.email.label(class="form-label") }}
+                                    {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.first_name.label(class="form-label") }}
+                                    {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else "")) }}
+                                    {% if form.first_name.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.first_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.last_name.label(class="form-label") }}
+                                    {{ form.last_name(class="form-control" + (" is-invalid" if form.last_name.errors else "")) }}
+                                    {% if form.last_name.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.last_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.role.label(class="form-label") }}
+                                    {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else "")) }}
+                                    {% if form.role.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.role.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if not current_user.is_super_admin() %}
+                                        <small class="form-text text-muted">Možete dodeliti samo 'Korisnik' ili 'Admin kompanije' ulogu</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.hourly_rate.label(class="form-label") }}
+                                    {{ form.hourly_rate(class="form-control" + (" is-invalid" if form.hourly_rate.errors else "")) }}
+                                    {% if form.hourly_rate.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.hourly_rate.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if not user %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.password.label(class="form-label") }}
+                                    {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+                                    {% if form.password.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.password.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.confirm_password.label(class="form-label") }}
+                                    {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else "")) }}
+                                    {% if form.confirm_password.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.confirm_password.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Projects Section -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Projekti</label>
+                                    
+                                    <!-- Search Box -->
+                                    <div class="mb-3">
+                                        <input type="text" id="projectSearch" class="form-control" placeholder="Pretraži projekte...">
+                                    </div>
+                                    
+                                    <!-- Projects Container -->
+                                    <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                                        <div id="projectsContainer">
+                                            {% for project in form.projects.choices %}
+                                            <div class="form-check project-item" data-project-name="{{ project[1].lower() }}">
+                                                <input class="form-check-input project-checkbox" type="checkbox" 
+                                                       name="projects" value="{{ project[0] }}" 
+                                                       id="project_{{ project[0] }}"
+                                                       {% if project[0] in current_project_ids %}checked{% endif %}>
+                                                <label class="form-check-label" for="project_{{ project[0] }}">
+                                                    {{ project[1] }}
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Select All/None Buttons -->
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" id="selectAll">Izaberi sve</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="selectNone">Poništi sve</button>
+                                    </div>
+                                    
+                                    {% if form.projects.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.projects.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Nazad
+                            </a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('projectSearch');
+    const projectItems = document.querySelectorAll('.project-item');
+    const selectAllBtn = document.getElementById('selectAll');
+    const selectNoneBtn = document.getElementById('selectNone');
+    const projectCheckboxes = document.querySelectorAll('.project-checkbox');
+
+    // Search functionality
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        projectItems.forEach(item => {
+            const projectName = item.getAttribute('data-project-name');
+            if (projectName.includes(searchTerm)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Select all functionality
+    selectAllBtn.addEventListener('click', function() {
+        projectCheckboxes.forEach(checkbox => {
+            if (checkbox.closest('.project-item').style.display !== 'none') {
+                checkbox.checked = true;
+            }
+        });
+    });
+
+    // Select none functionality
+    selectNoneBtn.addEventListener('click', function() {
+        projectCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    });
+
+    // Update form data before submit
+    document.getElementById('userForm').addEventListener('submit', function() {
+        const checkedProjects = [];
+        projectCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                checkedProjects.push(checkbox.value);
+            }
+        });
+        
+        // Remove existing hidden inputs for projects
+        const existingInputs = document.querySelectorAll('input[name="projects"][type="hidden"]');
+        existingInputs.forEach(input => input.remove());
+        
+        // Add hidden inputs for checked projects
+        checkedProjects.forEach(projectId => {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'projects';
+            hiddenInput.value = projectId;
+            this.appendChild(hiddenInput);
+        });
+    });
+});
+</script>
+{% endblock %} 

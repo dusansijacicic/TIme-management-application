@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Vremenski unosi - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Vremenski unosi za projekat: {{ project.name }}</h1>
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Nazad na dashboard
+        </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="card-title mb-0">Svi unosi za projekat</h5>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small class="text-muted">
+                                Kompanija: <strong>{{ project.company.name }}</strong> | 
+                                Status: 
+                                {% if project.status == 'active' %}
+                                    <span class="badge bg-success">Aktivan</span>
+                                {% elif project.status == 'completed' %}
+                                    <span class="badge bg-secondary">Završen</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Na čekanju</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if entries.items %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Datum</th>
+                                    <th>Korisnik</th>
+                                    <th>Sati</th>
+                                    <th>Opis</th>
+                                    <th>Uneto</th>
+                                    <th>Ažurirano</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in entries.items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ entry.date.strftime('%d.%m.%Y') }}</strong>
+                                        <br><small class="text-muted">{{ entry.date.strftime('%A') }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ entry.user.get_full_name() }}</strong>
+                                        <br><small class="text-muted">{{ entry.user.username }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ entry.hours }}h</span>
+                                    </td>
+                                    <td>
+                                        {% if entry.description %}
+                                            {{ entry.description[:50] }}{% if entry.description|length > 50 %}...{% endif %}
+                                        {% else %}
+                                            <em class="text-muted">Nema opisa</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ entry.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                            <br>od {{ entry.user.get_full_name() }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ entry.updated_at.strftime('%d.%m.%Y %H:%M') }}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if entries.pages > 1 %}
+                    <nav aria-label="Pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if entries.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.project_time_entries', project_id=project.id, page=entries.prev_num) }}">
+                                        <i class="bi bi-chevron-left"></i> Prethodna
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in entries.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != entries.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('main.project_time_entries', project_id=project.id, page=page_num) }}">
+                                                {{ page_num }}
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if entries.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.project_time_entries', project_id=project.id, page=entries.next_num) }}">
+                                        Sledeća <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-clock fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Nema vremenskih unosa</h5>
+                        <p class="text-muted">Za ovaj projekat još uvek nema unetih sati.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Summary Card -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Ukupno sati</h6>
+                                    <h3 class="mb-0">{{ entries.total }}h</h3>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-clock fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Ukupno unosa</h6>
+                                    <h3 class="mb-0">{{ entries.total }}</h3>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-list fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Aktivni korisnici</h6>
+                                    <h3 class="mb-0">{{ entries.items|map(attribute='user_id')|unique|list|length }}</h3>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-people fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

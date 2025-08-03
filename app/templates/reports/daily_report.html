@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block title %}Dnevni izveštaj{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-calendar-day"></i> Dnevni izveštaj - {{ date.strftime('%d.%m.%Y') }}
+                    </h4>
+                    <div>
+                        <a href="{{ url_for('reports.index') }}" class="btn btn-light btn-sm">
+                            <i class="bi bi-arrow-left"></i> Nazad
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Date Navigation -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('reports.daily_report', date=(date - timedelta(days=1)).strftime('%d.%m.%Y')) }}" 
+                                   class="btn btn-outline-primary">
+                                    <i class="bi bi-chevron-left"></i> Prethodni dan
+                                </a>
+                                <a href="{{ url_for('reports.daily_report', date=(date + timedelta(days=1)).strftime('%d.%m.%Y')) }}" 
+                                   class="btn btn-outline-primary">
+                                    Sledeći dan <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <a href="{{ url_for('reports.daily_report', date=today.strftime('%d.%m.%Y')) }}" 
+                               class="btn btn-success">
+                                <i class="bi bi-calendar-check"></i> Danas
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Date Picker -->
+                    <form method="GET" class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="date" class="form-label">Izaberite datum</label>
+                            <input type="text" class="form-control" id="date" name="date" 
+                                   placeholder="DD.MM.YYYY" value="{{ date.strftime('%d.%m.%Y') }}" onchange="this.form.submit()">
+                        </div>
+                    </form>
+
+                    <!-- Summary Statistics -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Ukupno sati</h5>
+                                    <h3 class="mb-0">{{ "%.2f"|format(total_hours) }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Time entries</h5>
+                                    <h3 class="mb-0">{{ entries|length }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Korisnika</h5>
+                                    <h3 class="mb-0">{{ unique_users }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Projekata</h5>
+                                    <h3 class="mb-0">{{ unique_projects }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time Entries Table -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Korisnik</th>
+                                    <th>Projekat</th>
+                                    <th>Kompanija</th>
+                                    <th>Sati</th>
+                                    <th>Opis</th>
+                                    <th>Vreme unosa</th>
+                                    <th>Akcije</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in entries %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ entry.user.get_full_name() }}</strong>
+                                        <br><small class="text-muted">@{{ entry.user.username }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ entry.project.name }} ({{ entry.project.company.name }})</strong>
+                                        {% if entry.project.description %}
+                                        <br><small class="text-muted">{{ entry.project.description[:50] }}{% if entry.project.description|length > 50 %}...{% endif %}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ entry.project.company.name }}</td>
+                                    <td>
+                                        <span class="badge bg-primary fs-6">{{ "%.2f"|format(entry.hours) }}</span>
+                                    </td>
+                                    <td>
+                                        {% if entry.description %}
+                                            {{ entry.description[:100] }}{% if entry.description|length > 100 %}...{% endif %}
+                                        {% else %}
+                                            <span class="text-muted">Nema opisa</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ entry.created_at.strftime('%H:%M') }}</small>
+                                        {% if entry.updated_at != entry.created_at %}
+                                        <br><small class="text-muted">Izmenjen: {{ entry.updated_at.strftime('%H:%M') }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            {% if current_user.id == entry.user_id or current_user.is_super_admin() or current_user.is_company_admin() or current_user.is_project_admin(entry.project_id) %}
+                                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    onclick="editTimeEntry({{ entry.id }})">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="deleteTimeEntry({{ entry.id }})">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if not entries %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar-x display-1 text-muted"></i>
+                        <h4 class="text-muted mt-3">Nema time entries za {{ date.strftime('%d.%m.%Y') }}</h4>
+                        <p class="text-muted">Niko nije logovao vreme za ovaj datum.</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Export Buttons -->
+                    <div class="mt-4 text-end">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-success" onclick="exportDailyExcel('{{ date.strftime('%d.%m.%Y') }}')">
+                                <i class="bi bi-file-earmark-excel me-1"></i>
+                                Excel
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="exportDailyPDF('{{ date.strftime('%d.%m.%Y') }}')">
+                                <i class="bi bi-file-earmark-text me-1"></i>
+                                PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Summary by Project -->
+                    {% if project_summary %}
+                    <div class="mt-5">
+                        <h5><i class="bi bi-graph-up"></i> Sumiranje po projektima</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Projekat</th>
+                                        <th>Kompanija</th>
+                                        <th>Ukupno sati</th>
+                                        <th>Korisnika</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for project_data in project_summary %}
+                                    <tr>
+                                        <td>{{ project_data.project_name }}</td>
+                                        <td>{{ project_data.company_name }}</td>
+                                        <td><strong>{{ "%.2f"|format(project_data.total_hours) }}</strong></td>
+                                        <td>{{ project_data.user_count }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Summary by User -->
+                    {% if user_summary %}
+                    <div class="mt-5">
+                        <h5><i class="bi bi-people"></i> Sumiranje po korisnicima</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Korisnik</th>
+                                        <th>Ukupno sati</th>
+                                        <th>Projekata</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user_data in user_summary %}
+                                    <tr>
+                                        <td>{{ user_data.first_name }} {{ user_data.last_name }}</td>
+                                        <td><strong>{{ "%.2f"|format(user_data.total_hours) }}</strong></td>
+                                        <td>{{ user_data.project_count }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Time Entry Modal -->
+<div class="modal fade" id="editTimeEntryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Izmeni time entry</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editTimeEntryForm">
+                    <div class="mb-3">
+                        <label for="edit_hours" class="form-label">Sati</label>
+                        <input type="number" class="form-control" id="edit_hours" name="hours" step="0.25" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_description" class="form-label">Opis</label>
+                        <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Otkaži</button>
+                <button type="button" class="btn btn-primary" onclick="saveTimeEntry()">Sačuvaj</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentEntryId = null;
+
+function editTimeEntry(entryId) {
+    currentEntryId = entryId;
+    
+    // Fetch current entry data
+    fetch(`/api/time-entries/${entryId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('edit_hours').value = data.hours;
+            document.getElementById('edit_description').value = data.description || '';
+            new bootstrap.Modal(document.getElementById('editTimeEntryModal')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Greška pri učitavanju time entry');
+        });
+}
+
+function saveTimeEntry() {
+    const formData = new FormData(document.getElementById('editTimeEntryForm'));
+    const data = {
+        hours: parseFloat(formData.get('hours')),
+        description: formData.get('description')
+    };
+
+    fetch(`/api/time-entries/${currentEntryId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Greška pri čuvanju: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Greška pri čuvanju time entry');
+    });
+}
+
+function deleteTimeEntry(entryId) {
+    if (confirm('Da li ste sigurni da želite da obrišete ovaj time entry?')) {
+        fetch(`/api/time-entries/${entryId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Greška pri brisanju: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Greška pri brisanju time entry');
+        });
+    }
+}
+
+// Export functions
+function exportDailyExcel(dateStr) {
+    window.open(`{{ url_for('reports.export_daily_excel', date_str='') }}${dateStr}`, '_blank');
+}
+
+function exportDailyPDF(dateStr) {
+    window.open(`{{ url_for('reports.export_daily_pdf', date_str='') }}${dateStr}`, '_blank');
+}
+</script>
+{% endblock %} 

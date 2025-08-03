@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Time Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title mb-0">
+                        <i class="bi bi-speedometer2 text-primary me-2"></i>
+                        Dobrodošli, {{ current_user.get_full_name() }}!
+                    </h2>
+                    <p class="text-muted mb-0">Pregled vaših aktivnosti i projekata</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        {% if current_user.is_super_admin() or current_user.is_company_admin() %}
+        <!-- Admin Statistics -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-white-50">Ukupno projekata</h5>
+                            <h2 class="mb-0 text-white">{{ projects|length }}</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-folder text-white-50" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card" style="background: linear-gradient(135deg, #34d399 0%, #10b981 100%); color: white;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-white-50">Kompanije</h5>
+                            <h2 class="mb-0 text-white">{{ companies|length }}</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-building text-white-50" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card" style="background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%); color: white;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-white-50">Aktivni projekti</h5>
+                            <h2 class="mb-0 text-white">{{ projects|selectattr('status', 'equalto', 'active')|list|length }}</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-play-circle text-white-50" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-white-50">Završeni projekti</h5>
+                            <h2 class="mb-0 text-white">{{ projects|selectattr('status', 'equalto', 'completed')|list|length }}</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-check-circle text-white-50" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <!-- User Statistics -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-white-50">Moji projekti</h5>
+                            <h2 class="mb-0 text-white">{{ projects|length }}</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-folder text-white-50" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card" style="background: linear-gradient(135deg, #34d399 0%, #10b981 100%); color: white;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-white-50">Kompanije</h5>
+                            <h2 class="mb-0 text-white">{{ companies|length }}</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-building text-white-50" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card" style="background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%); color: white;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-white-50">Aktivni projekti</h5>
+                            <h2 class="mb-0 text-white">{{ projects|selectattr('status', 'equalto', 'active')|list|length }}</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-play-circle text-white-50" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-white-50">Završeni projekti</h5>
+                            <h2 class="mb-0 text-white">{{ projects|selectattr('status', 'equalto', 'completed')|list|length }}</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-check-circle text-white-50" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightning me-2"></i>
+                        Brze akcije
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('main.time_entry') }}" class="btn btn-primary w-100" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none;">
+                                <i class="bi bi-clock me-2"></i>
+                                Unesi vreme
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('main.my_time_entries') }}" class="btn btn-success w-100" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+                                <i class="bi bi-list-check me-2"></i>
+                                Moji unosi
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('reports.index') }}" class="btn btn-info w-100" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); border: none;">
+                                <i class="bi bi-graph-up me-2"></i>
+                                Izveštaji
+                            </a>
+                        </div>
+                        {% if current_user.is_super_admin() %}
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.index') }}" class="btn btn-warning w-100" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none;">
+                                <i class="bi bi-gear me-2"></i>
+                                Admin Panel
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity and Projects -->
+    <div class="row">
+        <!-- Recent Time Entries -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Nedavne aktivnosti
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_entries %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Datum</th>
+                                    <th>Projekat</th>
+                                    <th>Korisnik</th>
+                                    <th>Sati</th>
+                                    <th>Opis</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in recent_entries %}
+                                <tr>
+                                    <td>{{ entry.date.strftime('%d.%m.%Y') }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ entry.project.name }} ({{ entry.project.company.name }})</span>
+                                    </td>
+                                    <td>{{ entry.user.get_full_name() }}</td>
+                                    <td>
+                                        <strong>{{ "%.2f"|format(entry.hours) }}h</strong>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ entry.description[:50] }}{% if entry.description|length > 50 %}...{% endif %}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2">Nema nedavnih aktivnosti</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if current_user.is_super_admin() or current_user.is_company_admin() %}
+        <!-- Active Projects -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-folder me-2"></i>
+                        Aktivni projekti
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if projects %}
+                        {% for project in projects[:5] %}
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="bi bi-folder text-white"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0">{{ project.name }}</h6>
+                                <small class="text-muted">{{ project.company_name }}</small>
+                                <div class="mt-1">
+                                    {% if project.status == 'active' %}
+                                        <span class="badge bg-success">Aktivan</span>
+                                    {% elif project.status == 'completed' %}
+                                        <span class="badge bg-secondary">Završen</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Na čekanju</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if projects|length > 5 %}
+                        <div class="text-center">
+                            <a href="#" class="btn btn-outline-primary btn-sm">Prikaži sve</a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-folder-x text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2">Nema aktivnih projekata</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

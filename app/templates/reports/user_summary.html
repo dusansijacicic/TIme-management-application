@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block title %}Izveštaj po korisnicima{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-people me-2"></i>
+                    Izveštaj po korisnicima
+                </h1>
+                <div>
+                    {% if current_user.is_super_admin() or current_user.is_company_admin() %}
+                    <button class="btn btn-success me-2" onclick="exportAllUsers()">
+                        <i class="bi bi-file-earmark-excel me-1"></i>
+                        Izvezi sve korisnike
+                    </button>
+                    <button class="btn btn-warning me-2" onclick="exportAllUsersZip()">
+                        <i class="bi bi-file-earmark-zip me-1"></i>
+                        ZIP sve korisnike
+                    </button>
+                    {% endif %}
+                    <button class="btn btn-info" onclick="exportMyReport()">
+                        <i class="bi bi-file-earmark-text me-1"></i>
+                        Moj izveštaj
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="start_date" class="form-label">Datum od</label>
+                            <input type="text" class="form-control" id="start_date" name="start_date" 
+                                   placeholder="DD.MM.YYYY" value="{{ request.args.get('start_date', '') }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="end_date" class="form-label">Datum do</label>
+                            <input type="text" class="form-control" id="end_date" name="end_date" 
+                                   placeholder="DD.MM.YYYY" value="{{ request.args.get('end_date', '') }}">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="bi bi-search me-1"></i>
+                                Filtriraj
+                            </button>
+                            <a href="{{ url_for('reports.user_summary') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-clockwise me-1"></i>
+                                Resetuj
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Ukupno korisnika</h5>
+                    <h3 class="mb-0">{{ summary_data|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Ukupno projekata</h5>
+                    <h3 class="mb-0">{{ summary_data|sum(attribute='project_count') }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Ukupno sati</h5>
+                    <h3 class="mb-0">{{ "%.2f"|format(summary_data|sum(attribute='total_hours')) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Ukupno unosa</h5>
+                    <h3 class="mb-0">{{ summary_data|sum(attribute='entry_count') }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-table me-2"></i>
+                        Detaljni pregled po korisnicima
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if summary_data %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Korisnik</th>
+                                    <th>Projekata</th>
+                                    <th>Kompanija</th>
+                                    <th>Ukupno sati</th>
+                                    <th>Broj unosa</th>
+                                    <th>Akcije</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in summary_data %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.user_name }}</strong>
+                                        <br><small class="text-muted">{{ item.username }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ item.project_count }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ item.company_count }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ "%.2f"|format(item.total_hours) }}h</span>
+                                    </td>
+                                    <td>{{ item.entry_count }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-sm btn-outline-primary" 
+                                                    onclick="showUserDetails('{{ item.user_id }}')">
+                                                <i class="bi bi-eye me-1"></i>
+                                                Detalji
+                                            </button>
+                                            {% if current_user.is_super_admin() or current_user.is_company_admin() or current_user.username == item.username %}
+                                            <button class="btn btn-sm btn-outline-success" 
+                                                    onclick="exportUserExcel('{{ item.username }}', '{{ item.user_id }}')">
+                                                <i class="bi bi-file-earmark-excel me-1"></i>
+                                                Excel
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-info" 
+                                                    onclick="exportUserPDF('{{ item.username }}', '{{ item.user_id }}')">
+                                                <i class="bi bi-file-earmark-text me-1"></i>
+                                                PDF
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox display-1 text-muted"></i>
+                        <h5 class="mt-3">Nema podataka</h5>
+                        <p class="text-muted">Nema time entries za odabrani period.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function exportUserExcel(username, userId) {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    
+    let url = `/reports/export/user/${userId}`;
+    const params = new URLSearchParams();
+    
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    window.location.href = url;
+}
+
+function exportUserPDF(username, userId) {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    
+    let url = `/reports/export/user/${userId}/pdf`;
+    const params = new URLSearchParams();
+    
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    window.location.href = url;
+}
+
+function exportAllUsers() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    
+    let url = '{{ url_for("reports.export_all_users_excel") }}';
+    const params = new URLSearchParams();
+    
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    window.location.href = url;
+}
+
+function exportAllUsersZip() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    
+    let url = '{{ url_for("reports.export_all_users_zip") }}';
+    const params = new URLSearchParams();
+    
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    window.location.href = url;
+}
+
+function exportMyReport() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    
+    let url = `/reports/export/user/{{ current_user.id }}`;
+    const params = new URLSearchParams();
+    
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    window.location.href = url;
+}
+
+function showUserDetails(userId) {
+    console.log('showUserDetails called with userId:', userId);
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    
+    let url = `/reports/api/user-details/${userId}`;
+    const params = new URLSearchParams();
+    
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    console.log('Fetching URL:', url);
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const modalContent = `
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person me-2"></i>
+                        Detalji korisnika: ${data.user_name}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Osnovne informacije</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Ime i prezime:</strong> ${data.user_name}</li>
+                                <li><strong>Username:</strong> ${data.username}</li>
+                                <li><strong>Email:</strong> ${data.email || 'Nije definisan'}</li>
+                                <li><strong>Rola:</strong> ${data.role}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Statistika za period</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Ukupno sati:</strong> ${parseFloat(data.total_hours).toFixed(2)}h</li>
+                                <li><strong>Ukupno unosa:</strong> ${data.entry_count}</li>
+                                <li><strong>Projekata:</strong> ${data.project_count}</li>
+                                <li><strong>Kompanija:</strong> ${data.company_count}</li>
+                                <li><strong>Period:</strong> ${data.report_period}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6>Projekti na kojima je radio</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Projekat</th>
+                                    <th>Kompanija</th>
+                                    <th>Sati</th>
+                                    <th>Unosa</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.projects.map(project => `
+                                    <tr>
+                                        <td>${project.name} (${project.company})</td>
+                                        <td>${project.company}</td>
+                                        <td><span class="badge bg-primary">${parseFloat(project.hours).toFixed(2)}h</span></td>
+                                        <td>${project.entries}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvori</button>
+                    <button type="button" class="btn btn-success" onclick="exportUserExcel('${data.username}', '${userId}')">
+                        <i class="bi bi-file-earmark-excel me-1"></i>
+                        Excel
+                    </button>
+                    <button type="button" class="btn btn-info" onclick="exportUserPDF('${data.username}', '${userId}')">
+                        <i class="bi bi-file-earmark-text me-1"></i>
+                        PDF
+                    </button>
+                </div>
+            `;
+            
+            // Create or update modal
+            let modal = document.getElementById('userDetailsModal');
+            console.log('Existing modal:', modal);
+            
+            if (!modal) {
+                console.log('Creating new modal');
+                modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.id = 'userDetailsModal';
+                modal.innerHTML = `
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            ${modalContent}
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                console.log('Modal created and appended to body');
+            } else {
+                console.log('Updating existing modal');
+                modal.querySelector('.modal-content').innerHTML = modalContent;
+            }
+            
+            // Show modal
+            console.log('Showing modal');
+            try {
+                const bootstrapModal = new bootstrap.Modal(modal);
+                bootstrapModal.show();
+                console.log('Modal show() called successfully');
+            } catch (error) {
+                console.error('Error showing modal:', error);
+                // Fallback to jQuery if Bootstrap fails
+                $('#userDetailsModal').modal('show');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Greška pri učitavanju detalja korisnika');
+        });
+}
+
+// Add date picker functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // You can add date picker library here if needed
+    // For now, we'll use simple text inputs with DD.MM.YYYY format
+});
+</script>
+{% endblock %} 

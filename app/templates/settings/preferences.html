@@ -1,0 +1,517 @@
+{% extends "base.html" %}
+
+{% block title %}Podešavanja{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-gear-fill me-2"></i>
+                    Podešavanja
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 col-xl-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-palette-fill me-2"></i>
+                        Prilagodite boje aplikacije
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="colorPreferencesForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="primaryColor" class="form-label fw-bold">Primarna boja</label>
+                                <select id="primaryColor" class="form-select" required>
+                                    <option value="emerald" {% if preferences.primary_color == 'emerald' %}selected{% endif %}>
+                                        🟢 Zelena (Emerald)
+                                    </option>
+                                    <option value="purple" {% if preferences.primary_color == 'purple' %}selected{% endif %}>
+                                        🟣 Tamno ljubičasta
+                                    </option>
+                                    <option value="chocolate" {% if preferences.primary_color == 'chocolate' %}selected{% endif %}>
+                                        🟤 Čokoladna
+                                    </option>
+                                    <option value="blue" {% if preferences.primary_color == 'blue' %}selected{% endif %}>
+                                        🔵 Plava
+                                    </option>
+                                    <option value="red" {% if preferences.primary_color == 'red' %}selected{% endif %}>
+                                        🔴 Crvena
+                                    </option>
+                                    <option value="orange" {% if preferences.primary_color == 'orange' %}selected{% endif %}>
+                                        🟠 Narandžasta
+                                    </option>
+                                    <option value="teal" {% if preferences.primary_color == 'teal' %}selected{% endif %}>
+                                        🔷 Teal
+                                    </option>
+                                    <option value="pink" {% if preferences.primary_color == 'pink' %}selected{% endif %}>
+                                        🩷 Roze
+                                    </option>
+                                    <option value="custom" {% if preferences.primary_color == 'custom' %}selected{% endif %}>
+                                        🎨 Prilagođena boja
+                                    </option>
+                                </select>
+                                <div class="form-text">Glavna boja aplikacije (dugmad, navigacija, itd.)</div>
+                                
+                                <!-- Custom Primary Color Picker -->
+                                <div id="customPrimaryContainer" class="mt-2" style="display: none;">
+                                    <label for="customPrimaryColor" class="form-label">Izaberi prilagođenu boju</label>
+                                    <div class="input-group">
+                                        <input type="color" id="customPrimaryColor" class="form-control form-control-color" 
+                                               value="{{ preferences.custom_primary_color or '#10b981' }}" title="Izaberi boju">
+                                        <input type="text" id="customPrimaryHex" class="form-control" 
+                                               value="{{ preferences.custom_primary_color or '#10b981' }}" 
+                                               placeholder="#10b981" pattern="^#[0-9A-Fa-f]{6}$">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="secondaryColor" class="form-label fw-bold">Sekundarna boja</label>
+                                <select id="secondaryColor" class="form-select" required>
+                                    <option value="white" {% if preferences.secondary_color == 'white' %}selected{% endif %}>
+                                        ⚪ Bela
+                                    </option>
+                                    <option value="emerald" {% if preferences.secondary_color == 'emerald' %}selected{% endif %}>
+                                        🟢 Zelena (Emerald)
+                                    </option>
+                                    <option value="purple" {% if preferences.secondary_color == 'purple' %}selected{% endif %}>
+                                        🟣 Tamno ljubičasta
+                                    </option>
+                                    <option value="chocolate" {% if preferences.secondary_color == 'chocolate' %}selected{% endif %}>
+                                        🟤 Čokoladna
+                                    </option>
+                                    <option value="blue" {% if preferences.secondary_color == 'blue' %}selected{% endif %}>
+                                        🔵 Plava
+                                    </option>
+                                    <option value="red" {% if preferences.secondary_color == 'red' %}selected{% endif %}>
+                                        🔴 Crvena
+                                    </option>
+                                    <option value="orange" {% if preferences.secondary_color == 'orange' %}selected{% endif %}>
+                                        🟠 Narandžasta
+                                    </option>
+                                    <option value="teal" {% if preferences.secondary_color == 'teal' %}selected{% endif %}>
+                                        🔷 Teal
+                                    </option>
+                                    <option value="pink" {% if preferences.secondary_color == 'pink' %}selected{% endif %}>
+                                        🩷 Roze
+                                    </option>
+                                    <option value="custom" {% if preferences.secondary_color == 'custom' %}selected{% endif %}>
+                                        🎨 Prilagođena boja
+                                    </option>
+                                </select>
+                                <div class="form-text">Sekundarna boja (pozadine, kartice, itd.)</div>
+                                
+                                <!-- Custom Secondary Color Picker -->
+                                <div id="customSecondaryContainer" class="mt-2" style="display: none;">
+                                    <label for="customSecondaryColor" class="form-label">Izaberi prilagođenu boju</label>
+                                    <div class="input-group">
+                                        <input type="color" id="customSecondaryColor" class="form-control form-control-color" 
+                                               value="{{ preferences.custom_secondary_color or '#ffffff' }}" title="Izaberi boju">
+                                        <input type="text" id="customSecondaryHex" class="form-control" 
+                                               value="{{ preferences.custom_secondary_color or '#ffffff' }}" 
+                                               placeholder="#ffffff" pattern="^#[0-9A-Fa-f]{6}$">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="textColor" class="form-label fw-bold">Boja teksta</label>
+                                <select id="textColor" class="form-select" required>
+                                    <option value="primary" {% if preferences.text_color == 'primary' %}selected{% endif %}>
+                                        📝 Primarna (tamno siva)
+                                    </option>
+                                    <option value="secondary" {% if preferences.text_color == 'secondary' %}selected{% endif %}>
+                                        📝 Sekundarna (srednje siva)
+                                    </option>
+                                    <option value="light" {% if preferences.text_color == 'light' %}selected{% endif %}>
+                                        📝 Svetla (svetlo siva)
+                                    </option>
+                                    <option value="white" {% if preferences.text_color == 'white' %}selected{% endif %}>
+                                        📝 Bela
+                                    </option>
+                                    <option value="dark" {% if preferences.text_color == 'dark' %}selected{% endif %}>
+                                        📝 Tamna (crna)
+                                    </option>
+                                    <option value="custom" {% if preferences.text_color == 'custom' %}selected{% endif %}>
+                                        🎨 Prilagođena boja
+                                    </option>
+                                </select>
+                                <div class="form-text">Boja teksta u aplikaciji</div>
+                                
+                                <!-- Custom Text Color Picker -->
+                                <div id="customTextContainer" class="mt-2" style="display: none;">
+                                    <label for="customTextColor" class="form-label">Izaberi prilagođenu boju teksta</label>
+                                    <div class="input-group">
+                                        <input type="color" id="customTextColor" class="form-control form-control-color" 
+                                               value="{{ preferences.custom_text_color or '#1f2937' }}" title="Izaberi boju">
+                                        <input type="text" id="customTextHex" class="form-control" 
+                                               value="{{ preferences.custom_text_color or '#1f2937' }}" 
+                                               placeholder="#1f2937" pattern="^#[0-9A-Fa-f]{6}$">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Pregled boja</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <div id="primaryPreview" class="color-preview me-2"></div>
+                                                    <span>Primarna boja</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <div id="secondaryPreview" class="color-preview me-2"></div>
+                                                    <span>Sekundarna boja</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <div id="textPreview" class="color-preview me-2"></div>
+                                                    <span>Boja teksta</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <button type="button" class="btn btn-primary me-2" id="previewBtn">
+                                                <i class="bi bi-eye-fill me-1"></i>
+                                                Pregledaj
+                                            </button>
+                                            <button type="button" class="btn btn-secondary" id="resetBtn">
+                                                <i class="bi bi-arrow-clockwise me-1"></i>
+                                                Resetuj
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle-fill me-1"></i>
+                                Sačuvaj promene
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-xl-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Informacije
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-lightbulb-fill me-2"></i>Kako funkcioniše?</h6>
+                        <ul class="mb-0">
+                            <li><strong>Primarna boja</strong> se koristi za dugmad, navigaciju i glavne elemente</li>
+                            <li><strong>Sekundarna boja</strong> se koristi za pozadine i sekundarne elemente</li>
+                            <li><strong>Boja teksta</strong> se koristi za tekst u aplikaciji</li>
+                            <li>Promene se primenjuju odmah nakon čuvanja</li>
+                            <li>Vaše podešavanje se pamti i primenjuje pri svakoj poseti</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <h6><i class="bi bi-exclamation-triangle-fill me-2"></i>Napomena</h6>
+                        <p class="mb-0">Promene boja se primenjuju samo na vašem nalogu. Drugi korisnici neće videti vaše podešavanje.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.color-preview {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid #dee2e6;
+    display: inline-block;
+}
+
+/* Color definitions */
+.color-emerald-primary { background-color: #059669; }
+.color-emerald-dark { background-color: #047857; }
+.color-emerald-light { background-color: #10b981; }
+.color-emerald-lighter { background-color: #34d399; }
+
+.color-purple-primary { background-color: #7c3aed; }
+.color-purple-dark { background-color: #6d28d9; }
+.color-purple-light { background-color: #8b5cf6; }
+.color-purple-lighter { background-color: #a78bfa; }
+
+.color-chocolate-primary { background-color: #92400e; }
+.color-chocolate-dark { background-color: #78350f; }
+.color-chocolate-light { background-color: #b45309; }
+.color-chocolate-lighter { background-color: #d97706; }
+
+.color-white { background-color: #ffffff; border: 1px solid #dee2e6; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const primarySelect = document.getElementById('primaryColor');
+    const secondarySelect = document.getElementById('secondaryColor');
+    const textSelect = document.getElementById('textColor');
+    const primaryPreview = document.getElementById('primaryPreview');
+    const secondaryPreview = document.getElementById('secondaryPreview');
+    const textPreview = document.getElementById('textPreview');
+    const previewBtn = document.getElementById('previewBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const form = document.getElementById('colorPreferencesForm');
+
+    // Color mapping
+    const colorMap = {
+        emerald: '#059669',
+        purple: '#7c3aed',
+        chocolate: '#92400e',
+        blue: '#2563eb',
+        red: '#dc2626',
+        orange: '#ea580c',
+        teal: '#0d9488',
+        pink: '#ec4899',
+        white: '#ffffff',
+        primary: '#1f2937',
+        secondary: '#6b7280',
+        light: '#9ca3af',
+        dark: '#111827'
+    };
+
+    // Custom color picker elements
+    const customPrimaryContainer = document.getElementById('customPrimaryContainer');
+    const customSecondaryContainer = document.getElementById('customSecondaryContainer');
+    const customTextContainer = document.getElementById('customTextContainer');
+    const customPrimaryColor = document.getElementById('customPrimaryColor');
+    const customSecondaryColor = document.getElementById('customSecondaryColor');
+    const customTextColor = document.getElementById('customTextColor');
+    const customPrimaryHex = document.getElementById('customPrimaryHex');
+    const customSecondaryHex = document.getElementById('customSecondaryHex');
+    const customTextHex = document.getElementById('customTextHex');
+
+    // Show/hide custom color pickers
+    function toggleCustomColorPickers() {
+        if (primarySelect.value === 'custom') {
+            customPrimaryContainer.style.display = 'block';
+        } else {
+            customPrimaryContainer.style.display = 'none';
+        }
+        
+        if (secondarySelect.value === 'custom') {
+            customSecondaryContainer.style.display = 'block';
+        } else {
+            customSecondaryContainer.style.display = 'none';
+        }
+        
+        if (textSelect.value === 'custom') {
+            customTextContainer.style.display = 'block';
+        } else {
+            customTextContainer.style.display = 'none';
+        }
+    }
+
+    // Update previews
+    function updatePreviews() {
+        const primaryColor = primarySelect.value;
+        const secondaryColor = secondarySelect.value;
+        const textColor = textSelect.value;
+        
+        // Get actual color values (including custom)
+        let primaryColorValue = colorMap[primaryColor] || customPrimaryColor.value;
+        let secondaryColorValue = colorMap[secondaryColor] || customSecondaryColor.value;
+        let textColorValue = colorMap[textColor] || customTextColor.value;
+        
+        primaryPreview.style.backgroundColor = primaryColorValue;
+        secondaryPreview.style.backgroundColor = secondaryColorValue;
+        textPreview.style.backgroundColor = textColorValue;
+        
+        if (secondaryColor === 'white') {
+            secondaryPreview.style.border = '1px solid #dee2e6';
+        } else {
+            secondaryPreview.style.border = '2px solid #dee2e6';
+        }
+        
+        if (textColor === 'white') {
+            textPreview.style.border = '1px solid #dee2e6';
+        } else {
+            textPreview.style.border = '2px solid #dee2e6';
+        }
+        
+        // Toggle custom color pickers
+        toggleCustomColorPickers();
+    }
+
+    // Apply colors to page
+    function applyColors(primaryColor, secondaryColor, textColor) {
+        const root = document.documentElement;
+        
+        // Remove existing color classes
+        root.classList.remove('theme-emerald', 'theme-purple', 'theme-chocolate', 'theme-blue', 'theme-red', 'theme-orange', 'theme-teal', 'theme-pink', 'theme-custom');
+        root.classList.remove('secondary-white', 'secondary-emerald', 'secondary-purple', 'secondary-chocolate', 'secondary-blue', 'secondary-red', 'secondary-orange', 'secondary-teal', 'secondary-pink', 'secondary-custom');
+        root.classList.remove('text-color-primary', 'text-color-secondary', 'text-color-light', 'text-color-white', 'text-color-dark', 'text-color-custom');
+        
+        // Add new color classes
+        root.classList.add(`theme-${primaryColor}`);
+        root.classList.add(`secondary-${secondaryColor}`);
+        root.classList.add(`text-color-${textColor}`);
+    }
+
+    // Preview colors
+    previewBtn.addEventListener('click', function() {
+        const primaryColor = primarySelect.value;
+        const secondaryColor = secondarySelect.value;
+        const textColor = textSelect.value;
+        applyColors(primaryColor, secondaryColor, textColor);
+    });
+
+    // Reset to current preferences
+    resetBtn.addEventListener('click', function() {
+        primarySelect.value = '{{ preferences.primary_color }}';
+        secondarySelect.value = '{{ preferences.secondary_color }}';
+        textSelect.value = '{{ preferences.text_color }}';
+        updatePreviews();
+        applyColors('{{ preferences.primary_color }}', '{{ preferences.secondary_color }}', '{{ preferences.text_color }}');
+    });
+
+    // Initialize on page load
+    updatePreviews();
+    
+    // Update previews when selection changes
+    primarySelect.addEventListener('change', updatePreviews);
+    secondarySelect.addEventListener('change', updatePreviews);
+    textSelect.addEventListener('change', updatePreviews);
+    
+    // Custom color picker event listeners
+    customPrimaryColor.addEventListener('input', function() {
+        customPrimaryHex.value = this.value;
+        updatePreviews();
+    });
+    
+    customSecondaryColor.addEventListener('input', function() {
+        customSecondaryHex.value = this.value;
+        updatePreviews();
+    });
+    
+    customPrimaryHex.addEventListener('input', function() {
+        if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+            customPrimaryColor.value = this.value;
+            updatePreviews();
+        }
+    });
+    
+    customSecondaryHex.addEventListener('input', function() {
+        if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+            customSecondaryColor.value = this.value;
+            updatePreviews();
+        }
+    });
+    
+    // Text color picker event listeners
+    customTextColor.addEventListener('input', function() {
+        customTextHex.value = this.value;
+        updatePreviews();
+    });
+    
+    customTextHex.addEventListener('input', function() {
+        if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+            customTextColor.value = this.value;
+            updatePreviews();
+        }
+    });
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            primary_color: primarySelect.value,
+            secondary_color: secondarySelect.value,
+            text_color: textSelect.value,
+            custom_primary_color: customPrimaryColor.value,
+            custom_secondary_color: customSecondaryColor.value,
+            custom_text_color: customTextColor.value
+        };
+
+        fetch('{{ url_for("settings.update_colors") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Apply colors immediately
+                applyColors(formData.primary_color, formData.secondary_color);
+                
+                // Show success message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show';
+                alert.innerHTML = `
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    ${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                form.insertBefore(alert, form.firstChild);
+                
+                // Auto-dismiss after 3 seconds
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 3000);
+            } else {
+                // Show error message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-danger alert-dismissible fade show';
+                alert.innerHTML = `
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    ${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                form.insertBefore(alert, form.firstChild);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show';
+            alert.innerHTML = `
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                Greška pri čuvanju podešavanja
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            form.insertBefore(alert, form.firstChild);
+        });
+    });
+
+    // Initialize previews
+    updatePreviews();
+});
+</script>
+{% endblock %} 

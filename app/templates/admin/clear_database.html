@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Očisti bazu podataka{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Očisti bazu podataka</h1>
+            <p class="text-gray-600">Ova akcija će obrisati sve podatke iz baze, osim super admin korisnika i njihovih preferencija.</p>
+        </div>
+
+        <!-- Warning Alert -->
+        <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Upozorenje!</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                        <p>Ova akcija je <strong>nepovratna</strong> i obrisaće sve podatke iz baze:</p>
+                        <ul class="list-disc list-inside mt-2 space-y-1">
+                            <li>Sve kompanije</li>
+                            <li>Sve projekte</li>
+                            <li>Sve time entries</li>
+                            <li>Sve korisnike (osim super admin)</li>
+                            <li>Sve korisničke preferencije (osim super admin)</li>
+                            <li>Sve veze između projekata i korisnika</li>
+                        </ul>
+                        <p class="mt-2 font-semibold">Super admin korisnici će biti zadržani.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Database Statistics -->
+        <div class="bg-white shadow rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Trenutno stanje baze podataka</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600">{{ stats.total_users }}</div>
+                    <div class="text-sm text-gray-600">Ukupno korisnika</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">{{ stats.super_admin_users }}</div>
+                    <div class="text-sm text-gray-600">Super admin</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-red-600">{{ stats.regular_users }}</div>
+                    <div class="text-sm text-gray-600">Obični korisnici</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">{{ stats.total_companies }}</div>
+                    <div class="text-sm text-gray-600">Kompanija</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-indigo-600">{{ stats.total_projects }}</div>
+                    <div class="text-sm text-gray-600">Projekata</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-yellow-600">{{ stats.total_time_entries }}</div>
+                    <div class="text-sm text-gray-600">Time entries</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-pink-600">{{ stats.total_project_users }}</div>
+                    <div class="text-sm text-gray-600">Project associations</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-gray-600">{{ stats.regular_user_preferences }}</div>
+                    <div class="text-sm text-gray-600">User preferences (obični korisnici)</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">{{ stats.super_admin_preferences }}</div>
+                    <div class="text-sm text-gray-600">User preferences (super admin - zadržano)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Form -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Potvrda brisanja</h2>
+            <form method="POST" onsubmit="return confirmFinal()">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="mb-4">
+                    <label for="confirm" class="block text-sm font-medium text-gray-700 mb-2">
+                        Za potvrdu, unesite <code class="bg-gray-100 px-2 py-1 rounded">DELETE_ALL_DATA</code>:
+                    </label>
+                    <input type="text" 
+                           id="confirm" 
+                           name="confirm" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                           placeholder="DELETE_ALL_DATA"
+                           required>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" 
+                            class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition duration-200">
+                        Očisti bazu podataka
+                    </button>
+                    <a href="{{ url_for('admin.index') }}" 
+                       class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md transition duration-200">
+                        Otkaži
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmFinal() {
+    const confirmText = document.getElementById('confirm').value;
+    if (confirmText === 'DELETE_ALL_DATA') {
+        return confirm('Da li ste sigurni da želite da obrišete SVE podatke iz baze? Ova akcija je nepovratna!');
+    }
+    return false;
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+
+{% block title %}Moj izveštaj{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="bi bi-person-circle me-2"></i>
+                        Moj izveštaj
+                    </h4>
+                    <p class="text-muted mb-0">Pregled vaših radnih sati</p>
+                </div>
+                <div class="card-body">
+                    <!-- Filters -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <label for="start-date" class="form-label">Od datuma</label>
+                            <input type="text" id="start-date" class="form-control" placeholder="DD.MM.YYYY" value="{{ start_date or '' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="end-date" class="form-label">Do datuma</label>
+                            <input type="text" id="end-date" class="form-control" placeholder="DD.MM.YYYY" value="{{ end_date or '' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" id="filter-btn" class="btn btn-primary d-block">
+                                <i class="bi bi-funnel"></i> Filtriraj
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <a href="{{ url_for('reports.export_my_report_excel', start_date=start_date, end_date=end_date) }}" class="btn btn-success d-block">
+                                <i class="bi bi-file-earmark-excel"></i> Preuzmi Excel
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card text-center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                                <div class="card-body">
+                                    <h5 class="card-title text-white-50">Ukupno sati</h5>
+                                    <h3 class="mb-0 text-white">{{ "%.1f"|format(total_hours) }}h</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- All Entries Table -->
+                    {% if all_entries %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-table me-2"></i>
+                                Svi unosi vremena
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Datum</th>
+                                            <th>Kompanija</th>
+                                            <th>Projekat</th>
+                                            <th>Sati</th>
+                                            <th>Opis</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for entry in all_entries %}
+                                        <tr>
+                                            <td><strong>{{ entry.date.strftime('%d.%m.%Y') }}</strong></td>
+                                            <td>
+                                                <span class="badge bg-info">{{ entry.company_name }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ entry.project_name }}</span>
+                                            </td>
+                                            <td>{{ "%.1f"|format(entry.hours) }}h</td>
+                                            <td>
+                                                {% if entry.description %}
+                                                    <small class="text-muted">{{ entry.description }}</small>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="table-dark">
+                                            <td colspan="3"><strong>UKUPNO</strong></td>
+                                            <td><strong>{{ "%.1f"|format(total_hours) }}h</strong></td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Report Content -->
+                    {% if report_data %}
+                        {% for company_name, company_data in report_data.items() %}
+                        <div class="card mb-4">
+                            <div class="card-header" style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-building me-2"></i>
+                                    {{ company_name }}
+                                </h5>
+                                <div class="mt-2">
+                                    <span class="badge bg-primary">Ukupno: {{ "%.1f"|format(company_data.total_hours) }}h</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {% for project_name, project_data in company_data.projects.items() %}
+                                <div class="mb-4">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="bi bi-folder me-2"></i>
+                                        {{ project_name }}
+                                    </h6>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Datum</th>
+                                                    <th>Sati</th>
+                                                    <th>Opis</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for date_str, daily_data in project_data.daily_entries.items() %}
+                                                <tr>
+                                                    <td><strong>{{ date_str }}</strong></td>
+                                                    <td>{{ "%.1f"|format(daily_data.hours) }}h</td>
+                                                    <td>
+                                                        {% if daily_data.description %}
+                                                            <small class="text-muted">{{ daily_data.description }}</small>
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                            <tfoot>
+                                                <tr class="table-info">
+                                                    <td><strong>UKUPNO ZA PROJEKAT</strong></td>
+                                                    <td><strong>{{ "%.1f"|format(project_data.total_hours) }}h</strong></td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <!-- Final Summary -->
+                        <div class="card mt-4" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); color: white;">
+                            <div class="card-body text-center">
+                                <h4 class="mb-3">
+                                    <i class="bi bi-calculator me-2"></i>
+                                    UKUPAN ZBIR ZA PERIOD
+                                </h4>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h5 class="text-white-50">Ukupno sati</h5>
+                                        <h2 class="text-white">{{ "%.1f"|format(total_hours) }}h</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-file-earmark-text text-muted" style="font-size: 4rem;"></i>
+                            <h4 class="text-muted mt-3">Nema podataka za prikaz</h4>
+                            <p class="text-muted">Nema unosa vremena za odabrani period.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+{% if report_data %}
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-pie-chart me-2"></i>
+                    Raspodela po kompanijama
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="companyChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-bar-chart me-2"></i>
+                    Sati po projektima
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="projectChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-graph-up me-2"></i>
+                    Sati po danima
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="earningsChart" width="800" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.getElementById('filter-btn').addEventListener('click', function() {
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    
+    let url = new URL(window.location);
+    if (startDate) {
+        url.searchParams.set('start_date', startDate);
+    } else {
+        url.searchParams.delete('start_date');
+    }
+    if (endDate) {
+        url.searchParams.set('end_date', endDate);
+    } else {
+        url.searchParams.delete('end_date');
+    }
+    
+    window.location.href = url.toString();
+});
+
+{% if report_data %}
+// Chart data
+const chartData = {
+    companies: {
+        labels: [{% for company_name, company_data in report_data.items() %}'{{ company_name }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        hours: [{% for company_name, company_data in report_data.items() %}{{ company_data.total_hours }}{% if not loop.last %}, {% endif %}{% endfor %}]
+    },
+    projects: {
+        labels: [],
+        hours: []
+    },
+    dailyEarnings: {
+        labels: [],
+        earnings: []
+    }
+};
+
+// Prepare project data
+{% for company_name, company_data in report_data.items() %}
+    {% for project_name, project_data in company_data.projects.items() %}
+        chartData.projects.labels.push('{{ project_name }}');
+        chartData.projects.hours.push({{ project_data.total_hours }});
+    {% endfor %}
+{% endfor %}
+
+// Prepare daily hours data
+{% for company_name, company_data in report_data.items() %}
+    {% for project_name, project_data in company_data.projects.items() %}
+        {% for date_str, daily_data in project_data.daily_entries.items() %}
+            const dateKey = '{{ date_str }}';
+            if (!chartData.dailyEarnings.labels.includes(dateKey)) {
+                chartData.dailyEarnings.labels.push(dateKey);
+                chartData.dailyEarnings.earnings.push(0);
+            }
+            const dateIndex = chartData.dailyEarnings.labels.indexOf(dateKey);
+            chartData.dailyEarnings.earnings[dateIndex] += {{ daily_data.hours }};
+        {% endfor %}
+    {% endfor %}
+{% endfor %}
+
+// Sort daily hours by date
+const sortedIndices = chartData.dailyEarnings.labels.map((label, index) => index)
+    .sort((a, b) => {
+        const dateA = new Date(chartData.dailyEarnings.labels[a].split('.').reverse().join('-'));
+        const dateB = new Date(chartData.dailyEarnings.labels[b].split('.').reverse().join('-'));
+        return dateA - dateB;
+    });
+
+chartData.dailyEarnings.labels = sortedIndices.map(i => chartData.dailyEarnings.labels[i]);
+chartData.dailyEarnings.earnings = sortedIndices.map(i => chartData.dailyEarnings.earnings[i]);
+
+// Company Chart (Pie)
+const companyCtx = document.getElementById('companyChart').getContext('2d');
+new Chart(companyCtx, {
+    type: 'pie',
+    data: {
+        labels: chartData.companies.labels,
+        datasets: [{
+            data: chartData.companies.hours,
+            backgroundColor: [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return `${label}: ${value}h (${percentage}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Project Chart (Bar)
+const projectCtx = document.getElementById('projectChart').getContext('2d');
+new Chart(projectCtx, {
+    type: 'bar',
+    data: {
+        labels: chartData.projects.labels,
+        datasets: [{
+            label: 'Sati',
+            data: chartData.projects.hours,
+            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Sati'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Hours Chart (Line)
+const earningsCtx = document.getElementById('earningsChart').getContext('2d');
+new Chart(earningsCtx, {
+    type: 'line',
+    data: {
+        labels: chartData.dailyEarnings.labels,
+        datasets: [{
+            label: 'Sati',
+            data: chartData.dailyEarnings.earnings,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Sati'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %} 

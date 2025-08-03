@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Korisnici{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title">Korisnici</h4>
+                    <a href="{{ url_for('admin.new_user') }}" class="btn btn-primary">
+                        <i class="bi bi-plus"></i> Novi korisnik
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Korisničko ime</th>
+                                    <th>Ime i prezime</th>
+                                    <th>Email</th>
+                                    <th>Uloga</th>
+                                    <th>Satnica</th>
+                                    <th>Status</th>
+                                    <th>Datum kreiranja</th>
+                                    <th>Akcije</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>{{ user.id }}</td>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.get_full_name() }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if user.role == 'super_admin' else 'warning' if user.role == 'company_admin' else 'info' }}">
+                                            {{ 'Super Admin' if user.role == 'super_admin' else 'Admin Kompanije' if user.role == 'company_admin' else 'Korisnik' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ "%.2f"|format(user.hourly_rate) if user.hourly_rate else '0.00' }} €</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if user.is_active else 'danger' }}">
+                                            {{ 'Aktivan' if user.is_active else 'Neaktivan' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ user.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               title="Uredi">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            {% if user.id != current_user.id %}
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-{{ 'success' if not user.is_active else 'danger' }}"
+                                                    onclick="toggleUserStatus({{ user.id }}, {{ 'true' if user.is_active else 'false' }})"
+                                                    title="{{ 'Aktiviraj' if not user.is_active else 'Deaktiviraj' }}">
+                                                <i class="bi bi-{{ 'check' if not user.is_active else 'x' }}"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleUserStatus(userId, currentStatus) {
+    const action = currentStatus ? 'deaktiviraj' : 'aktiviraj';
+    const newStatus = currentStatus ? false : true;
+    
+    if (confirm(`Da li ste sigurni da želite da ${action} ovog korisnika?`)) {
+        fetch(`/admin/users/${userId}/toggle-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token._value }}'
+            },
+            body: JSON.stringify({ is_active: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Greška: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Greška prilikom izvršavanja akcije');
+        });
+    }
+}
+</script>
+{% endblock %} 

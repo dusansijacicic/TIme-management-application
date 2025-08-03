@@ -1,0 +1,379 @@
+{% extends "base.html" %}
+
+{% block title %}Moji unosi vremena{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Moji unosi vremena</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Filters -->
+                    <div class="row mb-4">
+                        <div class="col-md-2">
+                            <label for="company-filter" class="form-label">Kompanija</label>
+                            <select id="company-filter" class="form-select">
+                                <option value="">Sve kompanije</option>
+                                {% for company in companies %}
+                                <option value="{{ company.id }}">{{ company.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="project-filter" class="form-label">Projekat</label>
+                            <select id="project-filter" class="form-select">
+                                <option value="">Svi projekti</option>
+                                {% for project in projects %}
+                                <option value="{{ project.id }}" data-company-id="{{ project.company_id }}">{{ project.name }} ({{ project.company_name }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date-from" class="form-label">Od datuma</label>
+                            <input type="text" id="date-from" class="form-control" placeholder="DD.MM.YYYY">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="date-to" class="form-label">Do datuma</label>
+                            <input type="text" id="date-to" class="form-control" placeholder="DD.MM.YYYY">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" id="filter-btn" class="btn btn-primary d-block">
+                                <i class="bi bi-funnel"></i> Filtriraj
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" id="clear-filters-btn" class="btn btn-outline-secondary d-block">
+                                <i class="bi bi-x-circle"></i> Očisti
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                                <div class="card-body">
+                                    <h5 class="card-title">Ukupno sati</h5>
+                                    <h3 class="mb-0">{{ "%.1f"|format(total_hours) }}h</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card" style="background: linear-gradient(135deg, #34d399 0%, #10b981 100%); color: white;">
+                                <div class="card-body">
+                                    <h5 class="card-title">Ukupno unosa</h5>
+                                    <h3 class="mb-0">{{ entries|length }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card" style="background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%); color: white;">
+                                <div class="card-body">
+                                    <h5 class="card-title">Prosečno po danu</h5>
+                                    <h3 class="mb-0">{{ "%.1f"|format(avg_hours_per_day) }}h</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time Entries Table -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Datum</th>
+                                    <th>Projekat</th>
+                                    <th>Kompanija</th>
+                                    <th>Opis</th>
+                                    <th>Sati</th>
+                                    <th>Akcije</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in entries %}
+                                <tr>
+                                    <td>{{ entry.date.strftime('%d.%m.%Y') }}</td>
+                                    <td>{{ entry.project.name }}</td>
+                                    <td>{{ entry.project.company_name }}</td>
+                                    <td>{{ entry.description or '-' }}</td>
+                                    <td>{{ "%.1f"|format(entry.hours) }}h</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-primary"
+                                                    onclick="editTimeEntry({{ entry.id }})"
+                                                    title="Uredi">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick="deleteTimeEntry({{ entry.id }})"
+                                                    title="Obriši">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if not entries %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-clock fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Nema unosa vremena</h5>
+                        <p class="text-muted">Započnite sa unosom vremena na <a href="{{ url_for('main.time_entry') }}">ovoj stranici</a></p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Time Entry Modal -->
+<div class="modal fade" id="editTimeEntryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Uredi unos vremena</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editTimeEntryForm">
+                    <div class="mb-3">
+                                                    <label for="edit-date" class="form-label">Datum</label>
+                            <input type="text" id="edit-date" class="form-control" placeholder="DD.MM.YYYY" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-project" class="form-label">Projekat</label>
+                        <select id="edit-project" class="form-select" required>
+                            <!-- Projects will be loaded dynamically -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-hours" class="form-label">Sati</label>
+                        <input type="number" id="edit-hours" class="form-control" step="0.5" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-description" class="form-label">Opis</label>
+                        <textarea id="edit-description" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Otkaži</button>
+                <button type="button" class="btn btn-primary" onclick="saveTimeEntry()">Sačuvaj</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentEntryId = null;
+
+function editTimeEntry(entryId) {
+    currentEntryId = entryId;
+    
+    // First load projects, then fetch entry data
+    Promise.all([
+        fetch('/api/user-projects').then(response => response.json()),
+        fetch(`/api/time-entries/${entryId}`).then(response => response.json())
+    ])
+    .then(([projects, entryData]) => {
+        if (entryData.success) {
+            const entry = entryData.entry;
+            
+            // Populate project dropdown
+            const projectSelect = document.getElementById('edit-project');
+            projectSelect.innerHTML = '';
+            projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = `${project.name} (${project.company_name})`;
+                projectSelect.appendChild(option);
+            });
+            
+                         // Set form values
+             // Backend already sends date in DD.MM.YYYY format
+             console.log('Date from backend:', entry.date);
+             document.getElementById('edit-date').value = entry.date || '';
+            document.getElementById('edit-project').value = entry.project_id;
+            document.getElementById('edit-hours').value = entry.hours;
+            document.getElementById('edit-description').value = entry.description || '';
+            
+            new bootstrap.Modal(document.getElementById('editTimeEntryModal')).show();
+        } else {
+            alert('Greška pri učitavanju unosa');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Greška pri učitavanju unosa');
+    });
+}
+
+function saveTimeEntry() {
+    // Convert DD.MM.YYYY to YYYY-MM-DD for backend
+    const dateInput = document.getElementById('edit-date').value.trim();
+    let dateFormatted = dateInput;
+    if (dateInput.includes('.')) {
+        const parts = dateInput.split('.');
+        if (parts.length === 3) {
+            const day = parts[0].trim().padStart(2, '0');
+            const month = parts[1].trim().padStart(2, '0');
+            const year = parts[2].trim();
+            dateFormatted = `${year}-${month}-${day}`;
+        }
+    }
+    
+    const formData = {
+        date: dateFormatted,
+        project_id: document.getElementById('edit-project').value,
+        hours: parseFloat(document.getElementById('edit-hours').value),
+        description: document.getElementById('edit-description').value
+    };
+    
+    fetch(`/api/time-entries/${currentEntryId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Greška: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Greška pri čuvanju');
+    });
+}
+
+function deleteTimeEntry(entryId) {
+    if (confirm('Da li ste sigurni da želite da obrišete ovaj unos?')) {
+        fetch(`/api/time-entries/${entryId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Greška: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Greška pri brisanju');
+        });
+    }
+}
+
+// Filter functionality
+document.getElementById('filter-btn').addEventListener('click', function() {
+    const companyId = document.getElementById('company-filter').value;
+    const projectId = document.getElementById('project-filter').value;
+    const dateFrom = document.getElementById('date-from').value;
+    const dateTo = document.getElementById('date-to').value;
+    
+    let url = new URL(window.location);
+    
+    // Clear existing params
+    url.searchParams.delete('company');
+    url.searchParams.delete('project');
+    url.searchParams.delete('date_from');
+    url.searchParams.delete('date_to');
+    
+    // Set new params
+    if (companyId) url.searchParams.set('company', companyId);
+    if (projectId) url.searchParams.set('project', projectId);
+    
+    // Use DD.MM.YYYY format directly
+    if (dateFrom) {
+        url.searchParams.set('date_from', dateFrom);
+    }
+    if (dateTo) {
+        url.searchParams.set('date_to', dateTo);
+    }
+    
+    window.location.href = url.toString();
+});
+
+// Clear filters functionality
+document.getElementById('clear-filters-btn').addEventListener('click', function() {
+    document.getElementById('company-filter').value = '';
+    document.getElementById('project-filter').value = '';
+    document.getElementById('date-from').value = '';
+    document.getElementById('date-to').value = '';
+    
+    let url = new URL(window.location);
+    url.searchParams.delete('company');
+    url.searchParams.delete('project');
+    url.searchParams.delete('date_from');
+    url.searchParams.delete('date_to');
+    
+    window.location.href = url.toString();
+});
+
+// Function to filter projects based on selected company
+function filterProjectsByCompany() {
+    const selectedCompanyId = document.getElementById('company-filter').value;
+    const projectSelect = document.getElementById('project-filter');
+    const projectOptions = projectSelect.querySelectorAll('option');
+    
+    // Reset project selection when company changes
+    projectSelect.value = '';
+    
+    projectOptions.forEach(option => {
+        if (option.value === '') {
+            // Always show "Svi projekti" option
+            option.style.display = '';
+        } else {
+            const projectCompanyId = option.getAttribute('data-company-id');
+            if (selectedCompanyId === '' || projectCompanyId === selectedCompanyId) {
+                // Show project if no company is selected or if it matches the selected company
+                option.style.display = '';
+            } else {
+                // Hide project if it doesn't match the selected company
+                option.style.display = 'none';
+            }
+        }
+    });
+}
+
+// Set current filter values and apply project filtering
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('company')) {
+        document.getElementById('company-filter').value = urlParams.get('company');
+    }
+    if (urlParams.get('project')) {
+        document.getElementById('project-filter').value = urlParams.get('project');
+    }
+    if (urlParams.get('date_from')) {
+        document.getElementById('date-from').value = urlParams.get('date_from');
+    }
+    if (urlParams.get('date_to')) {
+        document.getElementById('date-to').value = urlParams.get('date_to');
+    }
+    
+    // Apply initial project filtering
+    filterProjectsByCompany();
+    
+    // Add event listener for company filter changes
+    document.getElementById('company-filter').addEventListener('change', filterProjectsByCompany);
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Time Management System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title mb-0">
+                        <i class="bi bi-gear text-primary me-2"></i>
+                        Admin Dashboard
+                    </h2>
+                    <p class="text-muted mb-0">Sistem administracije i pregled statistika</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-white-50">Ukupno korisnika</h5>
+                            <h2 class="mb-0 text-white">{{ stats.total_users }}</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people text-white-50" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-white-50">Kompanije</h5>
+                            <h2 class="mb-0 text-white">{{ stats.total_companies }}</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-building text-white-50" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-white-50">Projekti</h5>
+                            <h2 class="mb-0 text-white">{{ stats.total_projects }}</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-folder text-white-50" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-white-50">Ukupno sati</h5>
+                            <h2 class="mb-0 text-white">{{ "%.1f"|format(stats.total_hours) }}h</h2>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-clock text-white-50" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightning me-2"></i>
+                        Brze akcije
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.new_company') }}" class="btn btn-primary w-100">
+                                <i class="bi bi-building-add me-2"></i>
+                                Nova kompanija
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.new_project') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-folder-plus me-2"></i>
+                                Novi projekat
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.new_user') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-person-plus me-2"></i>
+                                Novi korisnik
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('reports.index') }}" class="btn btn-outline-success w-100">
+                                <i class="bi bi-graph-up me-2"></i>
+                                Izveštaji
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.clear_database') }}" class="btn btn-outline-danger w-100">
+                                <i class="bi bi-trash me-2"></i>
+                                Očisti bazu
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.generate_mockup_data') }}" class="btn btn-outline-info w-100">
+                                <i class="bi bi-database-add me-2"></i>
+                                Mockup Podaci
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.mockup_user_21') }}" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-person-plus me-2"></i>
+                                Mockup User 21
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Management Sections -->
+    <div class="row">
+        <!-- Companies Management -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-building me-2"></i>
+                        Kompanije
+                    </h5>
+                    <a href="{{ url_for('admin.companies') }}" class="btn btn-outline-primary btn-sm">
+                        Pregled svih
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid">
+                        <a href="{{ url_for('admin.new_company') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Dodaj novu kompaniju
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Management -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-folder me-2"></i>
+                        Projekti
+                    </h5>
+                    <a href="{{ url_for('admin.projects') }}" class="btn btn-outline-primary btn-sm">
+                        Pregled svih
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid">
+                        <a href="{{ url_for('admin.new_project') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Dodaj novi projekat
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Management -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-people me-2"></i>
+                        Korisnici
+                    </h5>
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-outline-primary btn-sm">
+                        Pregled svih
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid">
+                        <a href="{{ url_for('admin.new_user') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Dodaj novog korisnika
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Izveštaji
+                    </h5>
+                    <a href="{{ url_for('reports.index') }}" class="btn btn-outline-primary btn-sm">
+                        Pregled svih
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('reports.user_summary') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-person-lines-fill me-2"></i>
+                            Izveštaj po korisnicima
+                        </a>
+                        <a href="{{ url_for('reports.company_summary') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-building-check me-2"></i>
+                            Izveštaj po kompanijama
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

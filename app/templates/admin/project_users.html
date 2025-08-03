@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Korisnici projekta - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Korisnici projekta: {{ project.name }}</h1>
+                        <a href="{{ url_for('admin.projects') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Nazad na projekte
+        </a>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Dodeljeni korisnici</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if project_users %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Korisnik</th>
+                                            <th>Email</th>
+                                            <th>Uloga na projektu</th>
+                                            <th>Dodeljen</th>
+                                            <th>Akcije</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for user in project_users %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ user.first_name }} {{ user.last_name }}</strong>
+                                                <br><small class="text-muted">{{ user.username }}</small>
+                                            </td>
+                                            <td>{{ user.email }}</td>
+                                            <td>
+                                                {% if user.project_role == 'project_admin' %}
+                                                    <span class="badge bg-warning">Admin projekta</span>
+                                                {% else %}
+                                                    <span class="badge bg-info">Korisnik</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ user.assigned_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                            <td>
+                                                <form method="POST" action="{{ url_for('admin.remove_user_from_project', project_id=project.id, user_id=user.id) }}" 
+                                                      style="display: inline;" 
+                                                      onsubmit="return confirm('Da li ste sigurni da želite da uklonite ovog korisnika sa projekta?')">
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="bi bi-trash"></i> Ukloni
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="bi bi-people fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Nema dodeljenih korisnika ovom projektu.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Dodeli korisnika</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="{{ url_for('admin.assign_user_to_project_form', project_id=project.id) }}">
+                                {{ form.hidden_tag() }}
+                                
+                                <div class="mb-3">
+                                    {{ form.user_id.label(class="form-label") }}
+                                    {{ form.user_id(class="form-select") }}
+                                    {% if form.user_id.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.user_id.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ form.role.label(class="form-label") }}
+                                    {{ form.role(class="form-select") }}
+                                    {% if form.role.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.role.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-grid">
+                                    {{ form.submit(class="btn btn-primary") }}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Informacije o projektu</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Naziv:</strong> {{ project.name }}</p>
+                            <p><strong>Kompanija:</strong> {{ project.company.name }}</p>
+                            <p><strong>Status:</strong> 
+                                {% if project.status == 'active' %}
+                                    <span class="badge bg-success">Aktivan</span>
+                                {% elif project.status == 'completed' %}
+                                    <span class="badge bg-secondary">Završen</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Na čekanju</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Period:</strong> {{ project.start_date.strftime('%d.%m.%Y') }} - 
+                                {% if project.end_date %}
+                                    {{ project.end_date.strftime('%d.%m.%Y') }}
+                                {% else %}
+                                    <em>Nije definisan</em>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
